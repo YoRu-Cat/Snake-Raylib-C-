@@ -14,6 +14,21 @@ int cellSize = 25;
 int cellCountHor = 64;
 int cellCountVer = 36;
 
+class Snake
+{
+public:
+	deque<Vector2> body = {Vector2{6, 9}, Vector2{5, 9}, Vector2{4, 9}};
+	void Draw()
+	{
+		for (unsigned int i = 0; i < body.size(); i++)
+		{
+			float x = body[i].x * cellSize;
+			float y = body[i].y * cellSize;
+			Rectangle rec = Rectangle{x, y, (float)cellSize, (float)cellSize};
+			DrawRectangleRounded(rec, 0.5, 10, i % 2 == 0 ? dark : light);
+		}
+	}
+};
 class Food
 {
 public:
@@ -51,12 +66,14 @@ int main()
 	SetTargetFPS(60);
 
 	Food food = Food();
+	Snake snake = Snake();
 
 	while (!WindowShouldClose())
 	{
 		BeginDrawing();
 		ClearBackground(bgColor);
 		food.Draw();
+		snake.Draw();
 		EndDrawing();
 	}
 
