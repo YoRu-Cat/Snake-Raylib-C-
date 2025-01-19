@@ -14,10 +14,22 @@ int cellSize = 25;
 int cellCountHor = 64;
 int cellCountVer = 36;
 
+double lastFrameTime = 0;
+bool eventHappened(double inter)
+{
+	double currentTime = GetTime();
+	if (currentTime - lastFrameTime >= inter)
+	{
+		lastFrameTime = currentTime;
+		return true;
+	}
+	return false;
+}
 class Snake
 {
 public:
 	deque<Vector2> body = {Vector2{6, 9}, Vector2{5, 9}, Vector2{4, 9}};
+	Vector2 direction = {1, 0};
 	void Draw()
 	{
 		for (unsigned int i = 0; i < body.size(); i++)
@@ -27,6 +39,11 @@ public:
 			Rectangle rec = Rectangle{x, y, (float)cellSize, (float)cellSize};
 			DrawRectangleRounded(rec, 0.5, 10, i % 2 == 0 ? dark : light);
 		}
+	}
+	void Move()
+	{
+		body.pop_back();
+		body.push_front(Vector2Add(body[0], direction));
 	}
 };
 class Food
@@ -71,6 +88,26 @@ int main()
 	while (!WindowShouldClose())
 	{
 		BeginDrawing();
+		if (eventHappened(0.2))
+		{
+			snake.Move();
+		}
+		if (IsKeyPressed(KEY_UP) && snake.direction.y == 0)
+		{
+			snake.direction = {0, -1};
+		}
+		else if (IsKeyPressed(KEY_DOWN) && snake.direction.y == 0)
+		{
+			snake.direction = {0, 1};
+		}
+		else if (IsKeyPressed(KEY_LEFT) && snake.direction.x == 0)
+		{
+			snake.direction = {-1, 0};
+		}
+		else if (IsKeyPressed(KEY_RIGHT) && snake.direction.x == 0)
+		{
+			snake.direction = {1, 0};
+		}
 		ClearBackground(bgColor);
 		food.Draw();
 		snake.Draw();
