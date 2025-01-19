@@ -10,9 +10,10 @@ Color bgColor = {88, 129, 87, 255};
 Color dark = {52, 78, 65, 255};
 Color light = {163, 177, 138, 255};
 
-int cellSize = 25;
-int cellCountHor = 64;
-int cellCountVer = 36;
+int cellSize = 30;
+int cellCountHor = 40;
+int cellCountVer = 25;
+int offset = 50;
 
 double lastFrameTime = 0;
 double speed = 0.15;
@@ -48,8 +49,8 @@ public:
 		{
 			float x = body[i].x * cellSize;
 			float y = body[i].y * cellSize;
-			Rectangle rec = Rectangle{x, y, (float)cellSize, (float)cellSize};
-			DrawRectangleRounded(rec, 0.5, 10, i % 2 == 0 ? dark : light);
+			Rectangle rec = Rectangle{offset + x, offset + y, (float)cellSize, (float)cellSize};
+			DrawRectangleRounded(rec, 0.5, 10, i % 2 == 0 ? dark : bgColor1);
 		}
 	}
 	void Move()
@@ -70,7 +71,7 @@ public:
 	Texture2D texture;
 	Food(deque<Vector2> snakeBody)
 	{
-		Image img = LoadImage("Graphics/FoodM.png");
+		Image img = LoadImage("Graphics/Food.png");
 		texture = LoadTextureFromImage(img);
 		UnloadImage(img);
 		position = GenRandomPos(snakeBody);
@@ -82,7 +83,7 @@ public:
 	}
 	void Draw()
 	{
-		DrawTexture(texture, position.x * cellSize, position.y * cellSize, WHITE);
+		DrawTexture(texture, position.x * cellSize + offset, position.y * cellSize + offset, WHITE);
 	}
 	Vector2 GenRandomCell()
 	{
@@ -108,6 +109,7 @@ public:
 	Snake snake = Snake();
 	Food food = Food(snake.body);
 	bool running = true;
+	int score = 0;
 	void Draw()
 	{
 		ClearBackground(bgColor);
@@ -173,6 +175,7 @@ public:
 			if (speed > 0.05)
 				speed /= 1.05;
 			food.position = food.GenRandomPos(snake.body);
+			score++;
 		}
 	}
 
@@ -190,6 +193,7 @@ public:
 		food.position = food.GenRandomPos(snake.body);
 		speed = 0.15;
 		running = false;
+		score = 0;
 	}
 
 	void CollisionTail()
@@ -206,7 +210,7 @@ int main()
 {
 	// Initialization
 	cout << "Starting the game.." << endl;
-	InitWindow(cellSize * cellCountHor, cellSize * cellCountVer, "Snake Game");
+	InitWindow(2 * offset + cellSize * cellCountHor, 2 * offset + cellSize * cellCountVer, "Snake Game");
 	SetTargetFPS(60);
 	Game game = Game();
 	while (!WindowShouldClose())
@@ -217,6 +221,9 @@ int main()
 			game.Move();
 		}
 		game.UpdateDirection(game.snake);
+		DrawRectangleLinesEx(Rectangle{(float)offset - 5, (float)offset - 5, (float)cellSize * cellCountHor + 10, (float)cellSize * cellCountVer + 10}, 5, dark);
+		DrawText("Snake Raylib By YoRu", offset - 5, 10, 30, light);
+		DrawText(TextFormat("Score : %i", game.score), offset - 5, cellSize * cellCountVer + 10 + offset, 30, light);
 		game.Draw();
 		EndDrawing();
 	}
