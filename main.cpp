@@ -75,42 +75,76 @@ public:
 	}
 };
 
+class Game
+{
+public:
+	Snake snake = Snake();
+	Food food = Food();
+
+	void Draw()
+	{
+		ClearBackground(bgColor);
+		food.Draw();
+		snake.Draw();
+	}
+
+	void Move()
+	{
+		snake.Move();
+	}
+
+	void UpdateDirection(Snake &snake)
+	{
+		if (IsKeyPressed(KEY_UP) && snake.direction.y != 1)
+		{
+			SetDirection(snake, {0, -1});
+		}
+		else if (IsKeyPressed(KEY_DOWN) && snake.direction.y != -1)
+		{
+			SetDirection(snake, {0, 1});
+		}
+		else if (IsKeyPressed(KEY_LEFT) && snake.direction.x != 1)
+		{
+			SetDirection(snake, {-1, 0});
+		}
+		else if (IsKeyPressed(KEY_RIGHT) && snake.direction.x != -1)
+		{
+			SetDirection(snake, {1, 0});
+		}
+	}
+
+	void SetDirection(Snake &snake, Vector2 newDir)
+	{
+		Vector2 newHead = Vector2Add(snake.body[0], newDir);
+		bool collision = false;
+		for (unsigned int i = 1; i < snake.body.size(); i++)
+		{
+			if (Vector2Equals(newHead, snake.body[i]))
+			{
+				collision = true;
+				break;
+			}
+		}
+		if (!collision)
+			snake.direction = newDir;
+	}
+};
 int main()
 {
 	// Initialization
 	cout << "Starting the game.." << endl;
 	InitWindow(cellSize * cellCountHor, cellSize * cellCountVer, "Snake Game");
 	SetTargetFPS(60);
-
-	Food food = Food();
-	Snake snake = Snake();
-
+	Game game = Game();
 	while (!WindowShouldClose())
 	{
 		BeginDrawing();
 		if (eventHappened(0.2))
 		{
-			snake.Move();
+			game.Move();
 		}
-		if (IsKeyPressed(KEY_UP) && snake.direction.y == 0)
-		{
-			snake.direction = {0, -1};
-		}
-		else if (IsKeyPressed(KEY_DOWN) && snake.direction.y == 0)
-		{
-			snake.direction = {0, 1};
-		}
-		else if (IsKeyPressed(KEY_LEFT) && snake.direction.x == 0)
-		{
-			snake.direction = {-1, 0};
-		}
-		else if (IsKeyPressed(KEY_RIGHT) && snake.direction.x == 0)
-		{
-			snake.direction = {1, 0};
-		}
-		ClearBackground(bgColor);
-		food.Draw();
-		snake.Draw();
+		game.UpdateDirection(game.snake);
+		game.Draw();
 		EndDrawing();
 	}
 
