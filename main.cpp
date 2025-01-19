@@ -57,6 +57,11 @@ public:
 		body.pop_back();
 		body.push_front(Vector2Add(body[0], direction));
 	}
+	void reset()
+	{
+		body = {Vector2{6, 9}, Vector2{5, 9}, Vector2{4, 9}};
+		direction = {1, 0};
+	}
 };
 class Food
 {
@@ -102,7 +107,7 @@ class Game
 public:
 	Snake snake = Snake();
 	Food food = Food(snake.body);
-
+	bool running = true;
 	void Draw()
 	{
 		ClearBackground(bgColor);
@@ -112,8 +117,12 @@ public:
 
 	void Move()
 	{
+		if (!running)
+			return;
 		snake.Move();
 		Eat();
+		GameOver();
+		CollisionTail();
 	}
 
 	void UpdateDirection(Snake &snake)
@@ -121,18 +130,22 @@ public:
 		if (IsKeyPressed(KEY_UP) && snake.direction.y != 1)
 		{
 			SetDirection(snake, {0, -1});
+			running = true;
 		}
 		else if (IsKeyPressed(KEY_DOWN) && snake.direction.y != -1)
 		{
 			SetDirection(snake, {0, 1});
+			running = true;
 		}
 		else if (IsKeyPressed(KEY_LEFT) && snake.direction.x != 1)
 		{
 			SetDirection(snake, {-1, 0});
+			running = true;
 		}
 		else if (IsKeyPressed(KEY_RIGHT) && snake.direction.x != -1)
 		{
 			SetDirection(snake, {1, 0});
+			running = true;
 		}
 	}
 
@@ -151,6 +164,7 @@ public:
 		if (!collision)
 			snake.direction = newDir;
 	}
+
 	void Eat()
 	{
 		if (Vector2Equals(snake.body[0], food.position))
@@ -159,6 +173,32 @@ public:
 			if (speed > 0.05)
 				speed /= 1.05;
 			food.position = food.GenRandomPos(snake.body);
+		}
+	}
+
+	void GameOver()
+	{
+		if (snake.body[0].x < 0 || snake.body[0].x >= cellCountHor || snake.body[0].y < 0 || snake.body[0].y >= cellCountVer)
+		{
+			gameOver();
+		}
+	}
+
+	void gameOver()
+	{
+		snake.reset();
+		food.position = food.GenRandomPos(snake.body);
+		speed = 0.15;
+		running = false;
+	}
+
+	void CollisionTail()
+	{
+		deque<Vector2> body = snake.body;
+		body.pop_front();
+		if (ElemInDeque(snake.body[0], body))
+		{
+			gameOver();
 		}
 	}
 };
