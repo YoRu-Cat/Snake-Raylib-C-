@@ -5,7 +5,8 @@
 
 using namespace std;
 
-Color bgColor = {58, 90, 64, 255};
+Color bgColor1 = {58, 90, 64, 255};
+Color bgColor = {88, 129, 87, 255};
 Color dark = {52, 78, 65, 255};
 Color light = {163, 177, 138, 255};
 
@@ -16,10 +17,29 @@ int cellCountVer = 36;
 class Food
 {
 public:
-	Vector2 position = {5, 6};
+	Vector2 position;
+	Texture2D texture;
+	Food()
+	{
+		Image img = LoadImage("Graphics/cherries.png");
+		texture = LoadTextureFromImage(img);
+		UnloadImage(img);
+		position = GenRandomPos();
+	}
+
+	~Food()
+	{
+		UnloadTexture(texture);
+	}
 	void Draw()
 	{
-		DrawRectangle(position.x * cellSize, position.y * cellSize, cellSize, cellSize, light);
+		DrawTexture(texture, position.x * cellSize, position.y * cellSize, WHITE);
+	}
+	Vector2 GenRandomPos()
+	{
+		float x = GetRandomValue(0, cellCountHor - 1);
+		float y = GetRandomValue(0, cellCountVer - 1);
+		return Vector2{x, y};
 	}
 };
 
