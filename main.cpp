@@ -15,6 +15,8 @@ int cellCountHor = 64;
 int cellCountVer = 36;
 
 double lastFrameTime = 0;
+double speed = 0.15;
+
 bool eventHappened(double inter)
 {
 	double currentTime = GetTime();
@@ -22,6 +24,16 @@ bool eventHappened(double inter)
 	{
 		lastFrameTime = currentTime;
 		return true;
+	}
+	return false;
+}
+
+bool ElemInDeque(Vector2 elem, deque<Vector2> deq)
+{
+	for (unsigned int i = 0; i < deq.size(); i++)
+	{
+		if (Vector2Equals(elem, deq[i]))
+			return true;
 	}
 	return false;
 }
@@ -51,12 +63,12 @@ class Food
 public:
 	Vector2 position;
 	Texture2D texture;
-	Food()
+	Food(deque<Vector2> snakeBody)
 	{
-		Image img = LoadImage("Graphics/cherries.png");
+		Image img = LoadImage("Graphics/FoodM.png");
 		texture = LoadTextureFromImage(img);
 		UnloadImage(img);
-		position = GenRandomPos();
+		position = GenRandomPos(snakeBody);
 	}
 
 	~Food()
@@ -67,11 +79,21 @@ public:
 	{
 		DrawTexture(texture, position.x * cellSize, position.y * cellSize, WHITE);
 	}
-	Vector2 GenRandomPos()
+	Vector2 GenRandomCell()
 	{
 		float x = GetRandomValue(0, cellCountHor - 1);
 		float y = GetRandomValue(0, cellCountVer - 1);
-		return Vector2{x, y};
+		Vector2 pos = {x, y};
+		return pos;
+	}
+	Vector2 GenRandomPos(deque<Vector2> snakeBody)
+	{
+		Vector2 pos = GenRandomCell();
+		while (ElemInDeque(pos, snakeBody))
+		{
+			pos = GenRandomCell();
+		}
+		return pos;
 	}
 };
 
@@ -79,7 +101,7 @@ class Game
 {
 public:
 	Snake snake = Snake();
-	Food food = Food();
+	Food food = Food(snake.body);
 
 	void Draw()
 	{
@@ -91,6 +113,7 @@ public:
 	void Move()
 	{
 		snake.Move();
+		Eat();
 	}
 
 	void UpdateDirection(Snake &snake)
@@ -128,6 +151,16 @@ public:
 		if (!collision)
 			snake.direction = newDir;
 	}
+	void Eat()
+	{
+		if (Vector2Equals(snake.body[0], food.position))
+		{
+			snake.body.push_back(snake.body[snake.body.size() - 1]);
+			if (speed > 0.05)
+				speed /= 1.05;
+			food.position = food.GenRandomPos(snake.body);
+		}
+	}
 };
 int main()
 {
@@ -139,7 +172,7 @@ int main()
 	while (!WindowShouldClose())
 	{
 		BeginDrawing();
-		if (eventHappened(0.2))
+		if (eventHappened(speed))
 		{
 			game.Move();
 		}
